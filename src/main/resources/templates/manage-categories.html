@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Categories</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f8f4; min-height: 100vh; }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 230px; background-color: #1b5e20; color: #fff; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; padding: 22px 0; }
+        .brand { font-size: 17px; font-weight: 700; padding: 0 22px 22px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+        .nav-links { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+        .nav-link { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; font-weight: 600; padding: 11px 22px; display: flex; align-items: center; gap: 10px; }
+        .nav-link:hover { background-color: rgba(255,255,255,0.08); }
+        .nav-link.active { background-color: rgba(255,255,255,0.14); color: #fff; border-right: 3px solid #a5d6a7; }
+        .logout-link { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; font-weight: 600; padding: 11px 22px; display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.12); margin-top: 10px; }
+        .logout-link:hover { color: #fff; }
+        .main { margin-left: 230px; flex: 1; padding: 32px 36px; }
+        .page-title { font-size: 20px; font-weight: 700; color: #1b1b1b; margin: 0 0 22px; }
+        .add-form { display: flex; gap: 10px; margin-bottom: 22px; max-width: 560px; }
+        .add-form input { flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+        .add-form input:focus { border-color: #43a047; box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.12); }
+        .add-form button { padding: 10px 20px; background-color: #2e7d32; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .add-form button:hover { background-color: #256428; }
+        .cat-row { background: #fff; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #eef2ee; max-width: 560px; }
+        .cat-name { font-size: 14px; font-weight: 500; color: #1b1b1b; }
+        .delete-link { color: #c62828; text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 6px; }
+        .delete-link:hover { background-color: #ffebee; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #9a9a9a; font-size: 14px; max-width: 560px; }
+        @media (max-width: 720px) {
+            .sidebar { width: 64px; }
+            .sidebar .brand, .nav-link span.label, .logout-link span.label { display: none; }
+            .main { margin-left: 64px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="brand">🌱 E-Waste</div>
+        <nav class="nav-links">
+            <a th:href="@{/dashboard}" class="nav-link">🏠 <span class="label">Dashboard</span></a>
+            <a th:href="@{/admin/categories}" class="nav-link active">⚙️ <span class="label">Categories</span></a>
+            <a th:href="@{/admin/requests}" class="nav-link">📋 <span class="label">All Requests</span></a>
+        </nav>
+        <a th:href="@{/logout}" class="logout-link">🚪 <span class="label">Logout</span></a>
+    </aside>
+    <main class="main">
+        <p class="page-title">Manage categories</p>
+        <form class="add-form" th:action="@{/admin/categories/add}" th:object="${category}" method="post">
+            <input type="text" th:field="*{name}" placeholder="New category name" required/>
+            <button type="submit">Add</button>
+        </form>
+        <div th:if="${not #lists.isEmpty(categories)}">
+            <div class="cat-row" th:each="cat : ${categories}">
+                <span class="cat-name" th:text="${cat.name}"></span>
+                <a class="delete-link" th:href="@{/admin/categories/delete/{id}(id=${cat.id})}">Delete</a>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(categories)}">
+            No categories yet. Add one above.
+        </div>
+    </main>
+</div>
+</body>
+</html>

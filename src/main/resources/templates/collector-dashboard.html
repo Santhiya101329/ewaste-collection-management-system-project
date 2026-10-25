@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collector Dashboard | EcoTrack</title>
+
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        :root {
+            --green: #176b36;
+            --dark-green: #124c29;
+            --light-green: #e6f5e9;
+            --bg: #f4f8f5;
+            --text: #1e293b;
+            --muted: #718096;
+            --border: #e5ede7;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .sidebar {
+            width: 245px;
+            position: fixed;
+            inset: 0 auto 0 0;
+            background: var(--dark-green);
+            color: white;
+            padding: 24px 14px;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            padding: 5px 12px 28px;
+            border-bottom: 1px solid #ffffff20;
+        }
+
+        .nav-title {
+            padding: 25px 12px 10px;
+            color: #b7d8c1;
+            font-size: 11px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            display: block;
+            color: #e4f0e7;
+            text-decoration: none;
+            padding: 13px 12px;
+            border-radius: 9px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #ffffff1c;
+            color: white;
+        }
+
+        .logout {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #ffffff20;
+        }
+
+        .main {
+            margin-left: 245px;
+            padding: 32px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 26px;
+        }
+
+        .topbar h1 {
+            font-size: 27px;
+            margin: 0 0 7px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .role-pill {
+            background: var(--light-green);
+            color: var(--green);
+            border-radius: 30px;
+            padding: 10px 15px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .welcome {
+            padding: 27px;
+            border-radius: 18px;
+            color: white;
+            background: linear-gradient(115deg, #238344, #15572c);
+            box-shadow: 0 8px 24px #176b361c;
+            margin-bottom: 25px;
+        }
+
+        .welcome h2 {
+            margin: 0 0 8px;
+            font-size: 23px;
+        }
+
+        .welcome p {
+            margin: 0;
+            color: #e4f4e8;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .stat-card {
+            padding: 22px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px #102c1808;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .stat-number {
+            margin-top: 14px;
+            font-size: 30px;
+            font-weight: 800;
+            color: #183c26;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 23px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px #102c1808;
+        }
+
+        .section-heading {
+            margin-bottom: 18px;
+        }
+
+        .section-heading h2 {
+            margin: 0 0 7px;
+            font-size: 19px;
+        }
+
+        .button {
+            display: inline-block;
+            border: 0;
+            border-radius: 8px;
+            background: var(--green);
+            color: white;
+            padding: 11px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .button:hover { background: #12552b; }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Collector location map */
+        #collectorMap {
+            width: 100%;
+            height: 350px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            z-index: 1;
+        }
+
+        .location-coordinates {
+            margin: 14px 0;
+            padding: 12px;
+            border-radius: 9px;
+            background: #f7faf8;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        .location-status {
+            margin: 12px 0;
+            padding: 12px;
+            border-radius: 9px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .location-success {
+            background: #e6f5e9;
+            color: #176b36;
+        }
+
+        .location-warning {
+            background: #fff4d6;
+            color: #805b00;
+        }
+
+        .location-error {
+            background: #ffebee;
+            color: #b91c1c;
+        }
+
+        .pickup-list {
+            display: grid;
+            gap: 17px;
+        }
+
+        .pickup-card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: #fff;
+        }
+
+        .pickup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .pickup-header h3 {
+            margin: 0 0 6px;
+            font-size: 17px;
+        }
+
+        .pickup-id {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #edf2f7;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .status-PENDING { background: #fff4d6; color: #946200; }
+        .status-SCHEDULED { background: #e4efff; color: #2456a6; }
+        .status-VERIFIED { background: #e9e5ff; color: #6041a6; }
+        .status-FLAGGED { background: #ffebee; color: #c62828; }
+        .status-COMPLETED,
+        .status-CLOSED { background: #e1f6e8; color: #176b36; }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 17px;
+        }
+
+        .detail {
+            background: #f7faf8;
+            border-radius: 9px;
+            padding: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .detail-label {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .pickup-form {
+            border-top: 1px solid var(--border);
+            padding-top: 17px;
+            margin-top: 14px;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #dce5de;
+            border-radius: 8px;
+            font: inherit;
+            font-size: 13px;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin: 8px 0 14px;
+        }
+
+        .empty {
+            padding: 32px 15px;
+            text-align: center;
+            color: var(--muted);
+            border: 1px dashed #cddbd0;
+            border-radius: 12px;
+        }
+
+        .empty strong {
+            display: block;
+            color: var(--text);
+            margin-bottom: 7px;
+        }
+
+        .message {
+            padding: 13px 15px;
+            border-radius: 9px;
+            margin-bottom: 18px;
+            background: #fff4d6;
+            color: #805b00;
+            font-size: 13px;
+        }
+
+        @media (max-width: 1000px) {
+            .main { padding: 23px; }
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 650px) {
+            .sidebar {
+                width: 76px;
+                padding: 18px 7px;
+            }
+
+            .brand {
+                font-size: 0;
+                text-align: center;
+                padding: 8px 0 22px;
+            }
+
+            .brand::after {
+                content: "🌱";
+                font-size: 25px;
+            }
+
+            .nav-title { display: none; }
+
+            .nav-link {
+                font-size: 0;
+                text-align: center;
+                padding: 15px 2px;
+            }
+
+            .nav-link span { font-size: 19px; }
+
+            .main {
+                margin-left: 76px;
+                padding: 18px 12px;
+            }
+
+            .topbar h1 { font-size: 22px; }
+            .role-pill { font-size: 11px; padding: 8px; }
+            .welcome { padding: 20px; }
+            .welcome h2 { font-size: 19px; }
+            .stats { grid-template-columns: 1fr; gap: 12px; }
+            .stat-card { padding: 17px; }
+            .section { padding: 15px; }
+            .details { grid-template-columns: 1fr; }
+            .pickup-card { padding: 14px; }
+            #collectorMap { height: 300px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="brand">🌱 EcoTrack</div>
+
+    <div class="nav-title">Collection</div>
+
+    <a th:href="@{/collector/dashboard}" class="nav-link active">
+        <span>🏠</span> Dashboard
+    </a>
+
+    <a href="#myPickups" class="nav-link">
+        <span>📦</span> My Pickups
+    </a>
+
+    <div class="logout">
+        <a th:href="@{/logout}" class="nav-link">
+            <span>🚪</span> Logout
+        </a>
+    </div>
+</aside>
+
+<main class="main">
+
+    <header class="topbar">
+        <div>
+            <h1>Collector Dashboard</h1>
+            <p class="subtitle">Manage your assigned e-waste pickups.</p>
+        </div>
+
+        <div class="role-pill">🚚 Collector</div>
+    </header>
+
+    <section class="welcome">
+        <h2>
+            Welcome,
+            <span th:text="${collector != null ? collector.name : 'Collector'}">
+                Collector
+            </span>!
+        </h2>
+        <p>Manage assigned pickups and submit collected e-waste for review.</p>
+    </section>
+
+    <div class="message"
+         th:if="${error != null}"
+         th:text="${error}">
+    </div>
+
+    <div id="locationFeedback"
+         class="location-status"
+         role="status"
+         aria-live="polite"
+         hidden>
+    </div>
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <div class="stat-label">Total Assigned</div>
+            <div class="stat-number"
+                 th:text="${requests != null ? requests.size() : 0}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Awaiting Pickup</div>
+            <div class="stat-number"
+                 th:text="${requests != null ? #lists.size(requests.?[status == 'SCHEDULED' or status == 'PENDING']) : 0}">
+                0
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Submitted for Review</div>
+            <div class="stat-number"
+                 th:text="${requests != null ? #lists.size(requests.?[status == 'VERIFIED']) : 0}">
+                0
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================= COLLECTOR LOCATION ================= -->
+
+    <section class="section">
+        <div class="section-heading">
+            <h2>📍 Update My Working Location</h2>
+            <p class="subtitle">
+                Click the map to mark your working location.
+                GPS is not used.
+            </p>
+        </div>
+
+        <p class="hint">
+            Select the place where you are currently available to collect
+            e-waste. Your saved location helps the system find nearby collectors.
+        </p>
+
+        <div id="collectorMap"
+             aria-label="Map for manually selecting collector working location">
+        </div>
+
+        <div class="location-coordinates">
+            <div>
+                <strong>Selected latitude:</strong>
+                <span id="selectedLatitude">Not selected</span>
+            </div>
+            <div>
+                <strong>Selected longitude:</strong>
+                <span id="selectedLongitude">Not selected</span>
+            </div>
+            <div>
+                <strong>Saved location:</strong>
+                <span th:if="${collector != null and collector.latitude != null and collector.longitude != null}"
+                      th:text="${collector.latitude + ', ' + collector.longitude}">
+                    Saved coordinates
+                </span>
+                <span th:if="${collector == null or collector.latitude == null or collector.longitude == null}">
+                    No location saved yet
+                </span>
+            </div>
+            <div>
+                <strong>Last updated:</strong>
+                <span th:if="${collector != null and collector.locationUpdatedAt != null}"
+                      th:text="${#temporals.format(collector.locationUpdatedAt, 'dd-MM-yyyy HH:mm')}">
+                    Not updated
+                </span>
+                <span th:if="${collector == null or collector.locationUpdatedAt == null}">
+                    Not updated yet
+                </span>
+            </div>
+        </div>
+
+        <form id="locationForm"
+              th:action="@{/collector/update-location}"
+              method="post">
+
+            <input type="hidden"
+                   id="latitude"
+                   name="latitude"
+                   th:value="${collector != null ? collector.latitude : ''}">
+
+            <input type="hidden"
+                   id="longitude"
+                   name="longitude"
+                   th:value="${collector != null ? collector.longitude : ''}">
+
+            <button type="submit"
+                    id="saveLocationButton"
+                    class="button"
+                    disabled>
+                Save Location
+            </button>
+        </form>
+
+        <p class="hint">
+            Note: The selected location is saved only after you click
+            “Save Location”. You can select a new location any time.
+        </p>
+    </section>
+
+    <!-- ================= ASSIGNED PICKUPS ================= -->
+
+    <section class="section" id="myPickups">
+        <div class="section-heading">
+            <h2>📦 My Assigned Pickups</h2>
+            <p class="subtitle">
+                Upload a pickup photo and submit the collection for review.
+            </p>
+        </div>
+
+        <div class="pickup-list"
+             th:if="${requests != null and !requests.isEmpty()}">
+
+            <article class="pickup-card"
+                     th:each="request : ${requests}">
+
+                <div class="pickup-header">
+                    <div>
+                        <h3>
+                            Pickup Request
+                            <span th:text="${'#' + request.id}">#1</span>
+                        </h3>
+                        <span class="pickup-id">Assigned collection task</span>
+                    </div>
+
+                    <span class="status"
+                          th:classappend="${' status-' + request.status}"
+                          th:text="${request.status}">
+                        SCHEDULED
+                    </span>
+                </div>
+
+                <div class="details">
+
+                    <div class="detail">
+                        <span class="detail-label">Customer</span>
+                        <span class="detail-value"
+                              th:text="${request.user != null ? request.user.name : 'N/A'}">
+                            Customer
+                        </span>
+                    </div>
+
+                    <div class="detail">
+                        <span class="detail-label">E-Waste Category</span>
+                        <span class="detail-value"
+                              th:text="${request.category != null ? request.category : 'N/A'}">
+                            Category
+                        </span>
+                    </div>
+
+                    <div class="detail">
+                        <span class="detail-label">Request Created</span>
+                        <span class="detail-value"
+                              th:text="${request.createdAt != null ? request.createdAt : 'N/A'}">
+                            Date
+                        </span>
+                    </div>
+
+                    <div class="detail">
+                        <span class="detail-label">Pickup Photo</span>
+                        <span class="detail-value"
+                              th:text="${request.pickupPhotoPath != null ? 'Uploaded' : 'Not uploaded'}">
+                            Not uploaded
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="pickup-form"
+                     th:if="${request.status == 'SCHEDULED' or request.status == 'PENDING'}">
+
+                    <h3 style="font-size:15px; margin-top:0">
+                        Submit Completed Pickup
+                    </h3>
+
+                    <p class="hint">
+                        Upload a photo of the collected e-waste.
+                        The pickup will be submitted for admin review.
+                    </p>
+
+                    <form th:action="@{/collector/complete-pickup}"
+                          method="post"
+                          enctype="multipart/form-data">
+
+                        <input type="hidden"
+                               name="requestId"
+                               th:value="${request.id}">
+
+                        <div class="field">
+                            <label>Pickup Photo</label>
+                            <input type="file"
+                                   name="pickupPhoto"
+                                   accept="image/*"
+                                   required>
+                        </div>
+
+                        <button type="submit" class="button">
+                            Complete Pickup
+                        </button>
+
+                    </form>
+                </div>
+
+                <div class="hint"
+                     th:if="${request.status == 'FLAGGED'}">
+                    ⚠️ This request needs admin review.
+                </div>
+
+                <div class="hint"
+                     th:if="${request.status == 'VERIFIED'}">
+                    ✅ Pickup submitted successfully. Await admin review.
+                </div>
+
+                <div class="hint"
+                     th:if="${request.status == 'COMPLETED' or request.status == 'CLOSED'}">
+                    ✅ This pickup has already been processed.
+                </div>
+
+            </article>
+        </div>
+
+        <div class="empty"
+             th:if="${requests == null or requests.isEmpty()}">
+            <strong>No pickups assigned yet</strong>
+            New assignments from the admin will appear here.
+        </div>
+    </section>
+
+</main>
+
+<!-- Leaflet Map JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Read previously saved coordinates from the page.
+    const latitudeInput = document.getElementById("latitude");
+    const longitudeInput = document.getElementById("longitude");
+    const saveButton = document.getElementById("saveLocationButton");
+    const selectedLatitude = document.getElementById("selectedLatitude");
+    const selectedLongitude = document.getElementById("selectedLongitude");
+    const feedback = document.getElementById("locationFeedback");
+
+    const savedLat = Number(latitudeInput.value);
+    const savedLng = Number(longitudeInput.value);
+
+    const hasSavedLocation =
+        latitudeInput.value.trim() !== "" &&
+        longitudeInput.value.trim() !== "" &&
+        Number.isFinite(savedLat) &&
+        Number.isFinite(savedLng);
+
+    // Start at saved location if available; otherwise use Chennai as a default.
+    const initialLat = hasSavedLocation ? savedLat : 13.0827;
+    const initialLng = hasSavedLocation ? savedLng : 80.2707;
+    const initialZoom = hasSavedLocation ? 15 : 12;
+
+    const map = L.map("collectorMap").setView(
+        [initialLat, initialLng],
+        initialZoom
+    );
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+        maxZoom: 19
+    }).addTo(map);
+
+    let marker = null;
+    let hasNewSelection = false;
+
+    // Display the existing saved marker when coordinates are available.
+    if (hasSavedLocation) {
+        marker = L.marker([savedLat, savedLng]).addTo(map);
+        marker.bindPopup("Your saved working location").openPopup();
+
+        selectedLatitude.textContent = savedLat.toFixed(6);
+        selectedLongitude.textContent = savedLng.toFixed(6);
+    }
+
+    function showFeedback(message, type) {
+        feedback.textContent = message;
+        feedback.className = "location-status " + type;
+        feedback.hidden = false;
+    }
+
+    // Select a location manually by clicking the map.
+    map.on("click", function (event) {
+        const lat = event.latlng.lat;
+        const lng = event.latlng.lng;
+
+        if (marker !== null) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng]).addTo(map);
+        }
+
+        marker.bindPopup("Selected working location").openPopup();
+
+        latitudeInput.value = lat.toFixed(8);
+        longitudeInput.value = lng.toFixed(8);
+
+        selectedLatitude.textContent = lat.toFixed(6);
+        selectedLongitude.textContent = lng.toFixed(6);
+
+        hasNewSelection = true;
+        saveButton.disabled = false;
+
+        showFeedback(
+            "Location selected. Click Save Location to store it.",
+            "location-success"
+        );
+    });
+
+    // Only submit after the collector selects a location on the map.
+    document.getElementById("locationForm").addEventListener("submit", function (event) {
+        const lat = Number(latitudeInput.value);
+        const lng = Number(longitudeInput.value);
+
+        if (!hasNewSelection ||
+            latitudeInput.value.trim() === "" ||
+            longitudeInput.value.trim() === "" ||
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lng) ||
+            lat < -90 || lat > 90 ||
+            lng < -180 || lng > 180) {
+
+            event.preventDefault();
+
+            showFeedback(
+                "Please click the map to select your location before saving.",
+                "location-warning"
+            );
+        } else {
+            saveButton.disabled = true;
+            saveButton.textContent = "Saving...";
+        }
+    });
+
+    // Show feedback after redirect from the controller.
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.has("locationUpdated")) {
+        showFeedback(
+            "Your working location was saved successfully.",
+            "location-success"
+        );
+    } else if (params.has("locationError")) {
+        showFeedback(
+            "Invalid coordinates. Please select your location again.",
+            "location-error"
+        );
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <title>New Pickup Request</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f8f4;
+            min-height: 100vh;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 230px;
+            background-color: #1b5e20;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            padding: 22px 0;
+        }
+
+        .brand {
+            font-size: 17px;
+            font-weight: 700;
+            padding: 0 22px 22px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.08);
+        }
+
+        .nav-link.active {
+            background-color: rgba(255,255,255,0.14);
+            color: #fff;
+            border-right: 3px solid #a5d6a7;
+        }
+
+        .logout-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid rgba(255,255,255,0.12);
+            margin-top: 10px;
+        }
+
+        .logout-link:hover {
+            color: #fff;
+        }
+
+        .main {
+            margin-left: 230px;
+            flex: 1;
+            padding: 32px 36px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1b1b1b;
+            margin: 0 0 22px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 32px 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            border: 1px solid #eef2ee;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .error-msg {
+            color: #c62828;
+            background: #ffebee;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #4a4a4a;
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #43a047;
+            box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.12);
+        }
+
+        /* Map */
+        .map-box {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            margin-top: 8px;
+        }
+
+        /* Show address button */
+        .map-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .map-btn:hover {
+            background-color: #c8e6c9;
+        }
+
+        /* Current location button */
+        .location-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #f1f8e9;
+            color: #33691e;
+            border: 1px solid #aed581;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .location-btn:hover {
+            background-color: #dcedc8;
+        }
+
+        .location-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 7px;
+            line-height: 1.5;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #256428;
+        }
+
+        @media (max-width: 720px) {
+
+            .sidebar {
+                width: 64px;
+            }
+
+            .sidebar .brand,
+            .nav-link span.label,
+            .logout-link span.label {
+                display: none;
+            }
+
+            .main {
+                margin-left: 64px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            🌱 E-Waste
+        </div>
+
+        <nav class="nav-links">
+
+            <a th:href="@{/dashboard}"
+               class="nav-link">
+
+                🏠
+                <span class="label">
+                    Dashboard
+                </span>
+
+            </a>
+
+
+            <a th:href="@{/request/new}"
+               class="nav-link active">
+
+                ➕
+                <span class="label">
+                    New Request
+                </span>
+
+            </a>
+
+
+            <a th:href="@{/request/my}"
+               class="nav-link">
+
+                📦
+                <span class="label">
+                    My Requests
+                </span>
+
+            </a>
+
+        </nav>
+
+
+        <a th:href="@{/logout}"
+           class="logout-link">
+
+            🚪
+            <span class="label">
+                Logout
+            </span>
+
+        </a>
+
+    </aside>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main">
+
+        <p class="page-title">
+            New pickup request
+        </p>
+
+
+        <div class="container">
+
+            <!-- Error message -->
+
+            <p th:if="${error}"
+               th:text="${error}"
+               class="error-msg">
+            </p>
+
+
+            <!-- ================= FORM ================= -->
+
+            <form th:action="@{/request/new}"
+                  th:object="${wasteRequest}"
+                  method="post">
+
+
+                <!-- CATEGORY -->
+
+                <div class="field">
+
+                    <span class="field-label">
+                        Category
+                    </span>
+
+
+                    <select th:field="*{category}"
+                            required>
+
+                        <option value="">
+                            Select category
+                        </option>
+
+                        <option value="Mobile Phone">
+                            Mobile Phone
+                        </option>
+
+                        <option value="Laptop">
+                            Laptop
+                        </option>
+
+                        <option value="Battery">
+                            Battery
+                        </option>
+
+                        <option value="Charger">
+                            Charger
+                        </option>
+
+                        <option value="Television">
+                            Television
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- PICKUP ADDRESS -->
+
+                <div class="field">
+
+                    <span class="field-label">
+                        Pickup address
+                    </span>
+
+
+                    <input type="text"
+                           th:field="*{address}"
+                           id="address"
+                           placeholder="Enter your complete pickup address"
+                           required/>
+
+
+                    <!-- Address to Map Button -->
+
+                    <button type="button"
+                            class="map-btn"
+                            onclick="showAddressOnMap()">
+
+                        📍 Show Address on Map
+
+                    </button>
+
+                </div>
+
+
+                <!-- PREFERRED DATE -->
+
+                <div class="field">
+
+                    <span class="field-label">
+                        Preferred date
+                    </span>
+
+
+                    <input type="date"
+                           th:field="*{preferredDate}"
+                           required/>
+
+                </div>
+
+
+                <!-- PICKUP LOCATION -->
+
+                <div class="field">
+
+                    <span class="field-label">
+                        Pickup location
+                    </span>
+
+
+                    <!-- MAP -->
+
+                    <div id="map"
+                         class="map-box">
+                    </div>
+
+
+                    <!-- CURRENT LOCATION -->
+
+                    <button type="button"
+                            class="location-btn"
+                            onclick="getCurrentLocation()">
+
+                        📍 Use My Current Location
+
+                    </button>
+
+
+                    <!-- LOCATION INFORMATION -->
+
+                    <p class="location-info"
+                       id="locationInfo">
+
+                        Enter your address and click
+                        "Show Address on Map", or select
+                        a location manually on the map.
+
+                    </p>
+
+
+                    <!-- LATITUDE -->
+
+                    <input type="hidden"
+                           th:field="*{latitude}"
+                           id="latitude">
+
+
+                    <!-- LONGITUDE -->
+
+                    <input type="hidden"
+                           th:field="*{longitude}"
+                           id="longitude">
+
+                </div>
+
+
+                <!-- SUBMIT -->
+
+                <button type="submit">
+
+                    Submit request
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- ================= LEAFLET JS ================= -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<script>
+
+    /*
+     * ==========================================
+     * CREATE MAP
+     * ==========================================
+     *
+     * Initial map location = Chennai
+     */
+
+    var map = L.map('map').setView(
+        [13.0827, 80.2707],
+        12
+    );
+
+
+    /*
+     * OpenStreetMap tiles
+     */
+
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            attribution:
+                '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(map);
+
+
+    /*
+     * Marker
+     *
+     * Initially no marker
+     */
+
+    var marker = null;
+
+
+    /*
+     * ==========================================
+     * MAP CLICK
+     * ==========================================
+     *
+     * User can manually click anywhere
+     * on the map.
+     */
+
+    map.on('click', function(e) {
+
+        var lat = e.latlng.lat;
+
+        var lng = e.latlng.lng;
+
+        setLocation(lat, lng);
+
+    });
+
+
+    /*
+     * ==========================================
+     * SET LOCATION
+     * ==========================================
+     */
+
+    function setLocation(lat, lng) {
+
+        /*
+         * Save latitude
+         */
+
+        document.getElementById('latitude').value =
+            lat;
+
+
+        /*
+         * Save longitude
+         */
+
+        document.getElementById('longitude').value =
+            lng;
+
+
+        /*
+         * Remove previous marker
+         */
+
+        if (marker !== null) {
+
+            map.removeLayer(marker);
+
+        }
+
+
+        /*
+         * Create new marker
+         */
+
+        marker = L.marker(
+            [lat, lng]
+        ).addTo(map);
+
+
+        /*
+         * Display coordinates
+         */
+
+        document.getElementById('locationInfo').innerText =
+            "Selected location: "
+            + lat.toFixed(6)
+            + ", "
+            + lng.toFixed(6);
+
+    }
+
+
+    /*
+     * ==========================================
+     * ADDRESS → MAP
+     * ==========================================
+     *
+     * Converts the typed address into
+     * latitude and longitude.
+     */
+
+    function showAddressOnMap() {
+
+        var address =
+            document.getElementById('address').value.trim();
+
+
+        /*
+         * Check empty address
+         */
+
+        if (address === '') {
+
+            alert(
+                "Please enter the pickup address first."
+            );
+
+            return;
+        }
+
+
+        /*
+         * Show searching message
+         */
+
+        document.getElementById('locationInfo').innerText =
+            "Searching for the address...";
+
+
+        /*
+         * Encode address for URL
+         */
+
+        var encodedAddress =
+            encodeURIComponent(address);
+
+
+        /*
+         * OpenStreetMap Nominatim geocoding service
+         */
+
+        var url =
+            "https://nominatim.openstreetmap.org/search"
+            + "?format=json"
+            + "&limit=1"
+            + "&q="
+            + encodedAddress;
+
+
+        /*
+         * Send request
+         */
+
+        fetch(url, {
+
+            headers: {
+                'Accept': 'application/json'
+            }
+
+        })
+
+        .then(function(response) {
+
+            return response.json();
+
+        })
+
+        .then(function(data) {
+
+            /*
+             * Address not found
+             */
+
+            if (data.length === 0) {
+
+                document.getElementById('locationInfo').innerText =
+                    "Address not found. Please enter a more complete address or select the location manually on the map.";
+
+                return;
+            }
+
+
+            /*
+             * Get latitude
+             */
+
+            var lat =
+                parseFloat(data[0].lat);
+
+
+            /*
+             * Get longitude
+             */
+
+            var lng =
+                parseFloat(data[0].lon);
+
+
+            /*
+             * Move map to address
+             */
+
+            map.setView(
+                [lat, lng],
+                17
+            );
+
+
+            /*
+             * Save location
+             */
+
+            setLocation(
+                lat,
+                lng
+            );
+
+
+            /*
+             * Show found address
+             */
+
+            document.getElementById('locationInfo').innerText =
+                "Location found: "
+                + data[0].display_name;
+
+        })
+
+        .catch(function(error) {
+
+            console.error(error);
+
+            document.getElementById('locationInfo').innerText =
+                "Unable to find the address. Please select the location manually on the map.";
+
+        });
+
+    }
+
+
+    /*
+     * ==========================================
+     * CURRENT LOCATION
+     * ==========================================
+     */
+
+    function getCurrentLocation() {
+
+        /*
+         * Check browser support
+         */
+
+        if (!navigator.geolocation) {
+
+            alert(
+                "Geolocation is not supported by your browser."
+            );
+
+            return;
+        }
+
+
+        /*
+         * Show message
+         */
+
+        document.getElementById('locationInfo').innerText =
+            "Getting your current location...";
+
+
+        /*
+         * Request location
+         */
+
+        navigator.geolocation.getCurrentPosition(
+
+            /*
+             * SUCCESS
+             */
+
+            function(position) {
+
+                var lat =
+                    position.coords.latitude;
+
+                var lng =
+                    position.coords.longitude;
+
+
+                /*
+                 * Move map
+                 */
+
+                map.setView(
+                    [lat, lng],
+                    17
+                );
+
+
+                /*
+                 * Save location
+                 */
+
+                setLocation(
+                    lat,
+                    lng
+                );
+
+            },
+
+
+            /*
+             * ERROR
+             */
+
+            function(error) {
+
+                alert(
+                    "Unable to get your current location. Please select the location manually on the map."
+                );
+
+            }
+
+        );
+
+    }
+
+
+    /*
+     * ==========================================
+     * FORM SUBMISSION VALIDATION
+     * ==========================================
+     *
+     * Location must be selected before
+     * submitting the request.
+     */
+
+    document.querySelector('form')
+        .addEventListener(
+            'submit',
+            function(event) {
+
+                var latitude =
+                    document.getElementById('latitude').value;
+
+
+                var longitude =
+                    document.getElementById('longitude').value;
+
+
+                /*
+                 * If location is not selected
+                 */
+
+                if (
+                    latitude === '' ||
+                    longitude === ''
+                ) {
+
+                    event.preventDefault();
+
+
+                    alert(
+                        "Please select your pickup location on the map."
+                    );
+
+                }
+
+            }
+        );
+
+</script>
+
+</body>
+</html>

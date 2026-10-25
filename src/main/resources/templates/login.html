@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f8f4;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 36px 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #1b1b1b;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 24px;
+        }
+
+        .error-msg {
+            color: #c62828;
+            background: #ffebee;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #4a4a4a;
+            font-size: 13px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #43a047;
+            box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.12);
+        }
+
+        .role-select {
+            display: flex;
+            gap: 8px;
+        }
+
+        .role-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .role-option input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .role-option label {
+            display: block;
+            text-align: center;
+            padding: 10px 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b6b6b;
+            cursor: pointer;
+        }
+
+        .role-option input:checked + label {
+            border-color: #43a047;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #256428;
+        }
+
+        .register-link {
+            display: block;
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: #6b6b6b;
+        }
+
+        .register-link a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>🌱 Welcome back</h2>
+
+    <p th:if="${error}"
+       th:text="${error}"
+       class="error-msg"></p>
+
+    <form th:action="@{/login}" method="post">
+
+        <div class="field">
+            <span class="field-label">Email</span>
+            <input type="email" name="email" required/>
+        </div>
+
+        <div class="field">
+            <span class="field-label">Password</span>
+            <input type="password" name="password" required/>
+        </div>
+
+        <div class="field">
+
+            <span class="field-label">Login as</span>
+
+            <div class="role-select">
+
+                <div class="role-option">
+                    <input type="radio"
+                           id="roleUser"
+                           name="loginAs"
+                           value="USER"
+                           checked/>
+                    <label for="roleUser">User</label>
+                </div>
+
+                <div class="role-option">
+                    <input type="radio"
+                           id="roleAdmin"
+                           name="loginAs"
+                           value="ADMIN"/>
+                    <label for="roleAdmin">Admin</label>
+                </div>
+
+                <div class="role-option">
+                    <input type="radio"
+                           id="roleCollector"
+                           name="loginAs"
+                           value="COLLECTOR"/>
+                    <label for="roleCollector">Collector</label>
+                </div>
+
+            </div>
+
+        </div>
+
+        <button type="submit">Login</button>
+
+    </form>
+
+    <span class="register-link">
+        Don't have an account?
+        <a th:href="@{/register}">Register</a>
+    </span>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Collectors</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f8f4;
+            color: #333;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 230px;
+            background-color: #1b5e20;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            padding: 22px 0;
+        }
+
+        .brand {
+            font-size: 17px;
+            font-weight: 700;
+            padding: 0 22px 22px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 22px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.08);
+        }
+
+        .nav-link.active {
+            background-color: rgba(255,255,255,0.14);
+            color: white;
+            border-right: 3px solid #a5d6a7;
+        }
+
+        .logout-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 22px;
+            border-top: 1px solid rgba(255,255,255,0.12);
+            margin-top: 10px;
+        }
+
+        .logout-link:hover {
+            color: white;
+        }
+
+        .main {
+            margin-left: 230px;
+            flex: 1;
+            padding: 32px 36px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1b1b1b;
+            margin: 0 0 22px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            max-width: 760px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+
+        .field {
+            margin-bottom: 15px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: #43a047;
+        }
+
+        .add-button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 7px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .add-button:hover {
+            background: #256428;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px 12px;
+            border-radius: 7px;
+            margin-bottom: 18px;
+            font-size: 13px;
+        }
+
+        .collector-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px 20px;
+            max-width: 760px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collector-info h4 {
+            margin: 0 0 6px;
+            color: #1b1b1b;
+        }
+
+        .collector-info p {
+            margin: 3px 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .available {
+            color: #2e7d32;
+            background: #e8f5e9;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .unavailable {
+            color: #c62828;
+            background: #ffebee;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 5px;
+            color: #2e7d32;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            🌱 E-Waste
+        </div>
+
+        <nav class="nav-links">
+
+            <a th:href="@{/dashboard}" class="nav-link">
+                🏠 Dashboard
+            </a>
+
+            <a th:href="@{/admin/categories}" class="nav-link">
+                ⚙️ Categories
+            </a>
+
+            <a th:href="@{/admin/requests}" class="nav-link">
+                📋 All Requests
+            </a>
+
+            <a th:href="@{/admin/collectors}" class="nav-link active">
+                👷 Collectors
+            </a>
+
+        </nav>
+
+        <a th:href="@{/logout}" class="logout-link">
+            🚪 Logout
+        </a>
+
+    </aside>
+
+
+    <!-- Main -->
+    <main class="main">
+
+        <p class="page-title">
+            Manage Collectors
+        </p>
+
+
+        <!-- Error message -->
+        <div class="error"
+             th:if="${error}"
+             th:text="${error}">
+        </div>
+
+
+        <!-- Add Collector -->
+        <div class="card">
+
+            <h3>
+                Add New Collector
+            </h3>
+
+            <form th:action="@{/admin/collectors/add}"
+                  method="post">
+
+                <div class="field">
+
+                    <label>
+                        Collector Name
+                    </label>
+
+                    <input type="text"
+                           name="name"
+                           placeholder="Enter collector name"
+                           required>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input type="email"
+                           name="email"
+                           placeholder="Enter collector email"
+                           required>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        Phone
+                    </label>
+
+                    <input type="text"
+                           name="phone"
+                           placeholder="Enter phone number"
+                           required>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        Password
+                    </label>
+
+                    <input type="password"
+                           name="password"
+                           placeholder="Create login password"
+                           required>
+
+                </div>
+
+
+                <button type="submit"
+                        class="add-button">
+
+                    Add Collector
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- Collector List -->
+        <div class="card">
+
+            <h3>
+                Registered Collectors
+            </h3>
+
+            <div th:if="${collectors != null and !collectors.isEmpty()}">
+
+                <div class="collector-card"
+                     th:each="collector : ${collectors}">
+
+                    <div class="collector-info">
+
+                        <h4 th:text="${collector.name}">
+                            Collector Name
+                        </h4>
+
+                        <p>
+                            📞
+                            <span th:text="${collector.phone}">
+                                Phone
+                            </span>
+                        </p>
+
+                        <p>
+                            📍 Location:
+                            <span th:if="${collector.latitude != null}">
+                                Available
+                            </span>
+
+                            <span th:if="${collector.latitude == null}">
+                                Not updated
+                            </span>
+                        </p>
+
+                    </div>
+
+
+                    <div>
+
+                        <span th:if="${collector.available}"
+                              class="available">
+                            AVAILABLE
+                        </span>
+
+                        <span th:if="${!collector.available}"
+                              class="unavailable">
+                            UNAVAILABLE
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div th:if="${collectors == null or collectors.isEmpty()}">
+
+                <p style="color:#777;">
+                    No collectors registered yet.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a th:href="@{/dashboard}"
+           class="back-link">
+
+            ← Back to Dashboard
+
+        </a>
+
+    </main>
+
+</div>
+
+</body>
+</html>

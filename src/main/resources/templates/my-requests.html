@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Requests</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f8f4; min-height: 100vh; }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 230px; background-color: #1b5e20; color: #fff; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; padding: 22px 0; }
+        .brand { font-size: 17px; font-weight: 700; padding: 0 22px 22px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+        .nav-links { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+        .nav-link { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; font-weight: 600; padding: 11px 22px; display: flex; align-items: center; gap: 10px; }
+        .nav-link:hover { background-color: rgba(255,255,255,0.08); }
+        .nav-link.active { background-color: rgba(255,255,255,0.14); color: #fff; border-right: 3px solid #a5d6a7; }
+        .logout-link { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; font-weight: 600; padding: 11px 22px; display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.12); margin-top: 10px; }
+        .logout-link:hover { color: #fff; }
+        .main { margin-left: 230px; flex: 1; padding: 32px 36px; }
+        .page-title { font-size: 20px; font-weight: 700; color: #1b1b1b; margin: 0 0 22px; }
+        .req-card { background: #fff; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #eef2ee; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 720px; }
+        .req-info p { margin: 0; }
+        .req-category { font-size: 14px; font-weight: 600; color: #1b1b1b; margin-bottom: 3px; }
+        .req-meta { font-size: 12px; color: #7a7a7a; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .status-PENDING { background: #fff3e0; color: #ef6c00; }
+        .status-SCHEDULED { background: #e3f2fd; color: #1565c0; }
+        .status-COMPLETED { background: #e8f5e9; color: #2e7d32; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #9a9a9a; }
+        .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+        .empty-state p { margin: 0; font-size: 14px; }
+        @media (max-width: 720px) {
+            .sidebar { width: 64px; }
+            .sidebar .brand, .nav-link span.label, .logout-link span.label { display: none; }
+            .main { margin-left: 64px; }
+            .req-card { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="brand">🌱 E-Waste</div>
+        <nav class="nav-links">
+            <a th:href="@{/dashboard}" class="nav-link">🏠 <span class="label">Dashboard</span></a>
+            <a th:href="@{/request/new}" class="nav-link">➕ <span class="label">New Request</span></a>
+            <a th:href="@{/request/my}" class="nav-link active">📦 <span class="label">My Requests</span></a>
+        </nav>
+        <a th:href="@{/logout}" class="logout-link">🚪 <span class="label">Logout</span></a>
+    </aside>
+    <main class="main">
+        <p class="page-title">My pickup requests</p>
+        <div th:if="${not #lists.isEmpty(requests)}">
+            <div class="req-card" th:each="req : ${requests}">
+                <div class="req-info">
+                    <p class="req-category" th:text="${req.category}"></p>
+                    <p class="req-meta" th:text="${req.address} + ' · ' + ${req.preferredDate}"></p>
+                </div>
+                <span class="status-badge" th:text="${req.status}" th:classappend="'status-' + ${req.status}"></span>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(requests)}">
+            <div class="icon">📦</div>
+            <p>No pickup requests yet. Click "New Request" to create one.</p>
+        </div>
+    </main>
+</div>
+</body>
+</html>

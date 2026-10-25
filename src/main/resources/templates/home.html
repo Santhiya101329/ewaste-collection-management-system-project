@@ -1,0 +1,1077 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack | Smart E-Waste Management</title>
+    <meta name="description" content="Schedule responsible e-waste collection with EcoTrack. Help create a cleaner and greener future.">
+
+    <style>
+        :root {
+            --green: #16834a;
+            --green-dark: #0b5131;
+            --green-light: #e9f8ee;
+            --text: #173b2a;
+            --muted: #68796e;
+            --white: #ffffff;
+            --border: #e3eee6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fbfdfb;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(1160px, 90%);
+            margin: auto;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            height: 78px;
+            background: rgba(255,255,255,.96);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--green-dark);
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: -.8px;
+        }
+
+        .logo-icon {
+            width: 43px;
+            height: 43px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            background: var(--green-light);
+            font-size: 25px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: #4d6254;
+            font-size: 14px;
+            font-weight: 600;
+            transition: .2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 21px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .btn-primary {
+            color: white;
+            background: var(--green);
+            box-shadow: 0 7px 20px rgba(22,131,74,.16);
+        }
+
+        .btn-primary:hover {
+            background: var(--green-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            color: var(--green-dark);
+            background: white;
+            border-color: #cfe3d4;
+        }
+
+        .btn-outline:hover {
+            background: var(--green-light);
+        }
+
+        /* HERO */
+        .hero {
+            padding: 82px 0 88px;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse at 88% 15%, #e2f7e8 0, transparent 34%),
+                linear-gradient(135deg, #fbfdfb 35%, #f0faf2 100%);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.08fr .92fr;
+            align-items: center;
+            gap: 65px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--green-dark);
+            background: #e5f6e9;
+            border: 1px solid #d3eedb;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .eyebrow-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #24a65b;
+        }
+
+        h1 {
+            font-size: clamp(39px, 4.4vw, 61px);
+            line-height: 1.12;
+            letter-spacing: -2.3px;
+            max-width: 650px;
+            margin-bottom: 24px;
+            color: #153d28;
+        }
+
+        h1 span {
+            color: var(--green);
+        }
+
+        .hero-description {
+            max-width: 530px;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.9;
+            margin-bottom: 30px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 13px;
+            margin-bottom: 35px;
+        }
+
+        .trust-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #53695a;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .check {
+            width: 22px;
+            height: 22px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: #dcf5e3;
+            color: var(--green);
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        /* HERO ILLUSTRATION */
+        .hero-art {
+            min-height: 440px;
+            display: grid;
+            place-items: center;
+            position: relative;
+        }
+
+        .art-circle {
+            position: absolute;
+            width: 390px;
+            height: 390px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #d9f3df, #effaf1);
+            border: 1px solid #d2ebd8;
+        }
+
+        .art-card {
+            width: min(350px, 92%);
+            min-height: 350px;
+            position: relative;
+            z-index: 1;
+            background: white;
+            border: 1px solid #e5efe7;
+            border-radius: 25px;
+            padding: 27px;
+            box-shadow: 0 25px 65px rgba(29,86,48,.13);
+        }
+
+        .art-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-pill {
+            padding: 6px 10px;
+            color: #178447;
+            background: #e6f8eb;
+            border-radius: 30px;
+            font-size: 10px;
+        }
+
+        .recycle-art {
+            display: grid;
+            place-items: center;
+            height: 170px;
+            margin: 8px 0;
+            font-size: 105px;
+            background: radial-gradient(circle, #e3f7e8 0, #f7fcf8 67%, transparent 68%);
+        }
+
+        .art-card h2 {
+            font-size: 21px;
+            margin-bottom: 5px;
+        }
+
+        .art-card > p {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+
+        .progress-line {
+            height: 7px;
+            border-radius: 20px;
+            background: #eaf1eb;
+            overflow: hidden;
+        }
+
+        .progress-line span {
+            display: block;
+            height: 100%;
+            width: 72%;
+            background: linear-gradient(90deg, #16834a, #68ce86);
+            border-radius: 20px;
+        }
+
+        .progress-caption {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 10px;
+            color: #6b7c70;
+        }
+
+        .floating-card {
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 14px 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(27,78,42,.10);
+        }
+
+        .floating-icon {
+            width: 39px;
+            height: 39px;
+            display: grid;
+            place-items: center;
+            border-radius: 11px;
+            background: #e6f7eb;
+            font-size: 20px;
+        }
+
+        .floating-card strong {
+            display: block;
+            font-size: 12px;
+        }
+
+        .floating-card small {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .float-left {
+            left: -4px;
+            bottom: 47px;
+        }
+
+        .float-right {
+            right: -7px;
+            top: 44px;
+        }
+
+        /* SECTION COMMON */
+        .section {
+            padding: 82px 0;
+        }
+
+        .section-heading {
+            max-width: 650px;
+            margin: 0 auto 43px;
+            text-align: center;
+        }
+
+        .section-label {
+            display: inline-block;
+            margin-bottom: 12px;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        .section-heading h2 {
+            color: #173d29;
+            font-size: clamp(29px, 3.2vw, 39px);
+            letter-spacing: -1.1px;
+            line-height: 1.25;
+            margin-bottom: 14px;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        /* CATEGORIES */
+        .categories {
+            background: white;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .category-card {
+            padding: 27px 22px;
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 18px;
+            transition: .25s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-6px);
+            border-color: #b9dfc4;
+            box-shadow: 0 15px 35px rgba(25,85,43,.07);
+        }
+
+        .category-icon {
+            width: 58px;
+            height: 58px;
+            display: grid;
+            place-items: center;
+            border-radius: 16px;
+            background: #eaf8ed;
+            font-size: 29px;
+            margin-bottom: 20px;
+        }
+
+        .category-card h3 {
+            font-size: 17px;
+            margin-bottom: 9px;
+        }
+
+        .category-card p {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        /* HOW IT WORKS */
+        .how {
+            background: #f2faf4;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .step-card {
+            position: relative;
+            padding: 30px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 19px;
+        }
+
+        .step-number {
+            display: inline-grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            background: var(--green);
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 22px;
+        }
+
+        .step-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .step-card p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.9;
+        }
+
+        /* WHY ECOTRACK */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 55px;
+            align-items: center;
+        }
+
+        .benefit-visual {
+            min-height: 330px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(145deg, #e3f6e8, #f4fbf5);
+            border: 1px solid #dcefe0;
+            border-radius: 24px;
+            font-size: 120px;
+        }
+
+        .benefit-content h2 {
+            font-size: clamp(29px, 3vw, 38px);
+            line-height: 1.25;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+
+        .benefit-content > p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.9;
+            margin-bottom: 23px;
+        }
+
+        .benefit-list {
+            list-style: none;
+            display: grid;
+            gap: 15px;
+        }
+
+        .benefit-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* CTA */
+        .cta-section {
+            padding: 15px 0 85px;
+        }
+
+        .cta-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            padding: 45px;
+            background: linear-gradient(120deg, #0b5131, #16834a);
+            border-radius: 24px;
+            color: white;
+        }
+
+        .cta-box h2 {
+            font-size: clamp(25px, 3vw, 35px);
+            line-height: 1.25;
+            margin-bottom: 10px;
+        }
+
+        .cta-box p {
+            color: #d9f0df;
+            font-size: 13px;
+        }
+
+        .cta-box .btn {
+            flex-shrink: 0;
+            background: white;
+            color: var(--green-dark);
+        }
+
+        .cta-box .btn:hover {
+            background: #e9f8ee;
+            transform: translateY(-2px);
+        }
+
+        /* FOOTER */
+        footer {
+            background: #102e20;
+            color: #e6f3e9;
+            padding: 36px 0;
+        }
+
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .footer-brand {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .footer-brand span {
+            color: #76d697;
+        }
+
+        .footer-inner p {
+            color: #b7cbbd;
+            font-size: 12px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: #d8e8dc;
+            font-size: 12px;
+        }
+
+        .footer-links a:hover {
+            color: #80e0a0;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 950px) {
+            .nav-links {
+                gap: 15px;
+            }
+
+            .hero-grid {
+                gap: 25px;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .art-circle {
+                width: 320px;
+                height: 320px;
+            }
+
+            .float-left {
+                left: 0;
+            }
+
+            .float-right {
+                right: 0;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .navbar {
+                height: auto;
+                padding: 14px 0;
+            }
+
+            .nav-inner {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .logo {
+                font-size: 21px;
+            }
+
+            .logo-icon {
+                width: 37px;
+                height: 37px;
+            }
+
+            .nav-links {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                padding-top: 8px;
+                border-top: 1px solid var(--border);
+            }
+
+            .nav-actions {
+                margin-left: auto;
+            }
+
+            .nav-actions .btn {
+                padding: 10px 13px;
+                font-size: 12px;
+            }
+
+            .hero {
+                padding: 55px 0 65px;
+            }
+
+            .hero-grid,
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-content {
+                text-align: center;
+            }
+
+            .hero-description {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-actions,
+            .trust-row {
+                justify-content: center;
+            }
+
+            .hero-art {
+                min-height: 390px;
+            }
+
+            .art-card {
+                max-width: 320px;
+            }
+
+            .float-left {
+                left: 0;
+                bottom: 15px;
+            }
+
+            .float-right {
+                right: 0;
+                top: 12px;
+            }
+
+            .section {
+                padding: 62px 0;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .benefit-visual {
+                min-height: 260px;
+                font-size: 90px;
+            }
+
+            .cta-box {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 30px;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 39px;
+                letter-spacing: -1.5px;
+            }
+
+            .trust-row {
+                gap: 12px;
+            }
+
+            .trust-item {
+                font-size: 11px;
+            }
+
+            .floating-card {
+                padding: 10px;
+            }
+
+            .floating-card strong {
+                font-size: 10px;
+            }
+
+            .floating-card small {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-inner">
+
+        <a class="logo" th:href="@{/}" aria-label="EcoTrack home">
+            <span class="logo-icon">♻</span>
+            EcoTrack
+        </a>
+
+        <nav class="nav-links" aria-label="Main navigation">
+            <a th:href="@{/}">Home</a>
+            <a href="#categories">E-Waste Types</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#about">About</a>
+        </nav>
+
+        <div class="nav-actions">
+            <a class="btn btn-outline" th:href="@{/login}">Login</a>
+            <a class="btn btn-primary" th:href="@{/register}">Get Started ↗</a>
+        </div>
+
+    </div>
+</header>
+
+<main>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container hero-grid">
+
+            <div class="hero-content">
+                <div class="eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    A smarter way to recycle
+                </div>
+
+                <h1>
+                    Give your old electronics a
+                    <span>greener future.</span>
+                </h1>
+
+                <p class="hero-description">
+                    Make responsible e-waste disposal simple.
+                    Request a pickup, schedule a convenient time,
+                    and track your collection through EcoTrack.
+                    Small actions today can create a cleaner tomorrow.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="btn btn-primary" th:href="@{/register}">
+                        Schedule a Pickup <span>→</span>
+                    </a>
+                    <a class="btn btn-outline" th:href="@{/login}">
+                        Explore Your Account
+                    </a>
+                </div>
+
+                <div class="trust-row">
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        Easy pickup requests
+                    </div>
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        Track collection status
+                    </div>
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        Responsible disposal
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-art" aria-label="EcoTrack recycling illustration">
+                <div class="art-circle"></div>
+
+                <div class="art-card">
+                    <div class="art-card-top">
+                        <span>YOUR ECO JOURNEY</span>
+                        <span class="status-pill">● Simple & Smart</span>
+                    </div>
+
+                    <div class="recycle-art">♻️</div>
+
+                    <h2>Recycle with purpose.</h2>
+                    <p>Every responsible pickup is a step towards a cleaner environment.</p>
+
+                    <div class="progress-line">
+                        <span></span>
+                    </div>
+
+                    <div class="progress-caption">
+                        <span>Request</span>
+                        <span>Collection</span>
+                        <span>Verification</span>
+                    </div>
+                </div>
+
+                <div class="floating-card float-left">
+                    <div class="floating-icon">📍</div>
+                    <div>
+                        <strong>Convenient Pickup</strong>
+                        <small>Choose your location</small>
+                    </div>
+                </div>
+
+                <div class="floating-card float-right">
+                    <div class="floating-icon">🌱</div>
+                    <div>
+                        <strong>Greener Choices</strong>
+                        <small>Dispose responsibly</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="section categories" id="categories">
+        <div class="container">
+
+            <div class="section-heading">
+                <span class="section-label">What We Collect</span>
+                <h2>Give unwanted electronics a better destination.</h2>
+                <p>
+                    Electronic items should be handled responsibly instead of
+                    being mixed with everyday household waste.
+                </p>
+            </div>
+
+            <div class="category-grid">
+
+                <article class="category-card">
+                    <div class="category-icon">💻</div>
+                    <h3>Computers & Laptops</h3>
+                    <p>Old computers, laptops, keyboards, mice and related accessories.</p>
+                </article>
+
+                <article class="category-card">
+                    <div class="category-icon">📱</div>
+                    <h3>Mobile Devices</h3>
+                    <p>Unused mobile phones, chargers, cables and small accessories.</p>
+                </article>
+
+                <article class="category-card">
+                    <div class="category-icon">📺</div>
+                    <h3>Home Electronics</h3>
+                    <p>Eligible televisions, audio devices and other electronic equipment.</p>
+                </article>
+
+                <article class="category-card">
+                    <div class="category-icon">🔋</div>
+                    <h3>Batteries & Parts</h3>
+                    <p>Eligible electronic components and batteries handled appropriately.</p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section how" id="how-it-works">
+        <div class="container">
+
+            <div class="section-heading">
+                <span class="section-label">How It Works</span>
+                <h2>Three simple steps to make a difference.</h2>
+                <p>
+                    EcoTrack helps you follow your e-waste pickup from
+                    your initial request to collection verification.
+                </p>
+            </div>
+
+            <div class="steps-grid">
+
+                <article class="step-card">
+                    <div class="step-number">01</div>
+                    <h3>Create a Pickup Request</h3>
+                    <p>
+                        Register or log in, provide the required details
+                        about your e-waste, and request a collection.
+                    </p>
+                </article>
+
+                <article class="step-card">
+                    <div class="step-number">02</div>
+                    <h3>Schedule Your Collection</h3>
+                    <p>
+                        Follow your request status and check the collection
+                        arrangements through your account.
+                    </p>
+                </article>
+
+                <article class="step-card">
+                    <div class="step-number">03</div>
+                    <h3>Track the Progress</h3>
+                    <p>
+                        Follow the pickup status as the collection is
+                        handled and verified by the responsible team.
+                    </p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT / BENEFITS -->
+    <section class="section" id="about">
+        <div class="container benefits-grid">
+
+            <div class="benefit-visual" aria-label="Green earth illustration">
+                🌍
+            </div>
+
+            <div class="benefit-content">
+                <span class="section-label">Why EcoTrack?</span>
+                <h2>Technology for a cleaner, more responsible future.</h2>
+
+                <p>
+                    EcoTrack provides a central place to request and follow
+                    e-waste collection. Clear request statuses help users
+                    and the collection team stay informed throughout the process.
+                </p>
+
+                <ul class="benefit-list">
+                    <li>
+                        <span class="check">✓</span>
+                        <span>Conveniently submit and follow pickup requests.</span>
+                    </li>
+                    <li>
+                        <span class="check">✓</span>
+                        <span>Keep collection details organised in one place.</span>
+                    </li>
+                    <li>
+                        <span class="check">✓</span>
+                        <span>Support more responsible electronic waste disposal.</span>
+                    </li>
+                    <li>
+                        <span class="check">✓</span>
+                        <span>Access your account to view available features.</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-box">
+                <div>
+                    <h2>Ready to make your next step greener?</h2>
+                    <p>Create your EcoTrack account and get started with a pickup request.</p>
+                </div>
+
+                <a class="btn" th:href="@{/register}">
+                    Join EcoTrack →
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <div class="container footer-inner">
+
+        <a class="footer-brand" th:href="@{/}">
+            ♻ Eco<span>Track</span>
+        </a>
+
+        <p>© 2026 EcoTrack. Building a cleaner tomorrow, one pickup at a time.</p>
+
+        <div class="footer-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/login}">Login</a>
+            <a th:href="@{/register}">Register</a>
+        </div>
+
+    </div>
+</footer>
+
+</body>
+</html>

@@ -8,6 +8,7 @@ import com.ewaste.repository.WasteRequestRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,31 +23,26 @@ public class WasteRequestService {
     @Autowired
     private CollectorRepository collectorRepository;
 
-    // Maximum distance for collector assignment
     private static final double MAX_DISTANCE_KM = 5.0;
 
-    // ================= CREATE REQUEST =================
-
+    // CREATE REQUEST
     public WasteRequest createRequest(WasteRequest request) {
         return wasteRequestRepository.save(request);
     }
 
-    // ================= USER REQUESTS =================
-
+    // USER REQUESTS
     public List<WasteRequest> getRequestsForUser(User user) {
         return wasteRequestRepository
                 .findByUserOrderByCreatedAtDesc(user);
     }
 
-    // ================= ALL REQUESTS =================
-
+    // ALL REQUESTS
     public List<WasteRequest> getAllRequests() {
         return wasteRequestRepository
                 .findAllByOrderByCreatedAtDesc();
     }
 
-    // ================= UPDATE STATUS =================
-
+    // UPDATE STATUS
     public void updateStatus(Long id, String status) {
         WasteRequest request =
                 wasteRequestRepository.findById(id).orElse(null);
@@ -57,55 +53,62 @@ public class WasteRequestService {
         }
     }
 
-    // ================= COUNT STATUS =================
-
+    // COUNT STATUS
     public long countByStatus(String status) {
         return wasteRequestRepository.countByStatus(status);
     }
 
-    // ================= DUPLICATE REQUEST =================
-
+    // DUPLICATE REQUEST
     public boolean isDuplicateRequest(User user, String category) {
         return wasteRequestRepository
                 .existsByUserAndCategoryAndStatus(
                         user, category, "PENDING");
     }
 
-    // ================= FIND NEAREST ELIGIBLE COLLECTOR =================
-
+    // FIND NEAREST ELIGIBLE COLLECTOR
     public Collector findNearestCollector(WasteRequest request) {
 
-        // Customer location must be available
         if (request == null ||
                 request.getLatitude() == null ||
                 request.getLongitude() == null) {
+            System.out.println(
+                    "Assignment failed: pickup location is missing.");
             return null;
         }
 
         double customerLat = request.getLatitude();
         double customerLng = request.getLongitude();
 
-        // Validate customer coordinates
         if (customerLat < -90 || customerLat > 90 ||
                 customerLng < -180 || customerLng > 180) {
+            System.out.println(
+                    "Assignment failed: invalid pickup coordinates.");
             return null;
         }
 
         List<Collector> availableCollectors =
                 collectorRepository.findByAvailableTrue();
 
+        System.out.println(
+                "Available collectors found: "
+                        + availableCollectors.size());
+
         if (availableCollectors.isEmpty()) {
+            System.out.println(
+                    "Assignment failed: no available collectors.");
             return null;
         }
 
         List<CollectorDistance> nearbyCollectors =
                 new ArrayList<>();
 
-        // Find collectors with saved locations within 5 km
         for (Collector collector : availableCollectors) {
 
             if (collector.getLatitude() == null ||
                     collector.getLongitude() == null) {
+                System.out.println(
+                        "Collector " + collector.getId()
+                                + " skipped: GPS location missing.");
                 continue;
             }
 
@@ -114,6 +117,9 @@ public class WasteRequestService {
 
             if (collectorLat < -90 || collectorLat > 90 ||
                     collectorLng < -180 || collectorLng > 180) {
+                System.out.println(
+                        "Collector " + collector.getId()
+                                + " skipped: invalid GPS coordinates.");
                 continue;
             }
 
@@ -124,19 +130,28 @@ public class WasteRequestService {
                     collectorLng
             );
 
+            System.out.println(
+                    "Collector " + collector.getId()
+                            + " distance: "
+                            + String.format("%.2f", distance)
+                            + " km");
+
             if (distance <= MAX_DISTANCE_KM) {
                 nearbyCollectors.add(
-                        new CollectorDistance(collector, distance)
-                );
+                        new CollectorDistance(collector, distance));
             }
         }
 
-        // Never randomly assign outside the radius
+        System.out.println(
+                "Collectors within 5 km: "
+                        + nearbyCollectors.size());
+
         if (nearbyCollectors.isEmpty()) {
+            System.out.println(
+                    "Assignment failed: no collector within 5 km.");
             return null;
         }
 
-        // Count active assignments for each nearby collector
         List<WasteRequest> allRequests =
                 wasteRequestRepository.findAll();
 
@@ -154,8 +169,6 @@ public class WasteRequestService {
             candidate.activePickups = activePickups;
         }
 
-        // First: fewest active pickups among nearby collectors.
-        // Tie-breaker: shortest distance.
         nearbyCollectors.sort(
                 Comparator
                         .comparingLong(
@@ -163,33 +176,40 @@ public class WasteRequestService {
                         .thenComparingDouble(c -> c.distanceKm)
         );
 
-        return nearbyCollectors.get(0).collector;
+        Collector selected = nearbyCollectors.get(0).collector;
+
+        System.out.println(
+                "Selected collector ID: " + selected.getId());
+
+        return selected;
     }
 
-    // ================= ASSIGN COLLECTOR =================
-
+    // ASSIGN COLLECTOR
+    @Transactional
     public boolean assignCollector(Long requestId) {
 
         WasteRequest request =
                 wasteRequestRepository.findById(requestId).orElse(null);
 
         if (request == null) {
+            System.out.println("Assignment failed: request not found.");
             return false;
         }
 
-        // Do not reassign an already assigned request
         if (request.getCollector() != null) {
+            System.out.println(
+                    "Assignment failed: request already assigned.");
             return false;
         }
 
-        // Only assign requests that are still pending
         if (!"PENDING".equals(request.getStatus())) {
+            System.out.println(
+                    "Assignment failed: request is not PENDING.");
             return false;
         }
 
         Collector collector = findNearestCollector(request);
 
-        // No eligible collector: keep request unassigned
         if (collector == null) {
             return false;
         }
@@ -199,21 +219,15 @@ public class WasteRequestService {
 
         wasteRequestRepository.save(request);
 
-        /*
-         * Do not set collector.available=false here.
-         * Otherwise that collector cannot be considered for
-         * other nearby requests, making workload balancing ineffective.
-         *
-         * Active workload is calculated from SCHEDULED and IN_PROGRESS
-         * requests. The collector's available flag remains true until
-         * your application explicitly marks the collector unavailable.
-         */
+        System.out.println(
+                "Request " + requestId
+                        + " assigned to collector "
+                        + collector.getId());
 
         return true;
     }
 
-    // ================= DISTANCE CALCULATION =================
-
+    // DISTANCE CALCULATION
     private double calculateDistance(
             double lat1,
             double lon1,
@@ -226,23 +240,24 @@ public class WasteRequestService {
         double lonDifference = Math.toRadians(lon2 - lon1);
 
         double a =
-                Math.sin(latDifference / 2) *
-                Math.sin(latDifference / 2) +
-                Math.cos(Math.toRadians(lat1)) *
-                Math.cos(Math.toRadians(lat2)) *
-                Math.sin(lonDifference / 2) *
-                Math.sin(lonDifference / 2);
+                Math.sin(latDifference / 2)
+                        * Math.sin(latDifference / 2)
+                + Math.cos(Math.toRadians(lat1))
+                        * Math.cos(Math.toRadians(lat2))
+                        * Math.sin(lonDifference / 2)
+                        * Math.sin(lonDifference / 2);
+
+        // Avoid tiny floating-point errors outside [0, 1]
+        a = Math.max(0.0, Math.min(1.0, a));
 
         double c = 2 * Math.atan2(
                 Math.sqrt(a),
-                Math.sqrt(1 - a)
-        );
+                Math.sqrt(1.0 - a));
 
         return EARTH_RADIUS_KM * c;
     }
 
-    // ================= COLLECTOR DISTANCE HELPER =================
-
+    // COLLECTOR DISTANCE HELPER
     private static class CollectorDistance {
 
         private final Collector collector;
